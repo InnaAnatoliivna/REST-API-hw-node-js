@@ -2,7 +2,7 @@ const service = require('../service/contacts');
 
 const get = async (req, res, next) => {
     try {
-        const results = await service.getAllContacts();
+        const results = await service.getAllContacts(req.user._id);
         res.status(200).json(results)
     } catch (error) {
         console.error(error)
@@ -42,7 +42,7 @@ const remove = async (req, res, next) => {
 
 const add = async (req, res, next) => {
     try {
-        const result = await service.createContact(req.body)
+        const result = await service.createContact(req.body, req.user._id)
         res.status(201).json(result)
     } catch (error) {
         console.error(error)

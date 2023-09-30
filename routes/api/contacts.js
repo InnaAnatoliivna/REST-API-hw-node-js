@@ -5,11 +5,15 @@ const ctrlContact = require('../../controller/contacts')
 const validateContactId = require('../../middlewares/errorHandlerID');
 const validateRequestBody = require('../../middlewares/errorHandlerBody');
 const validateStatus = require('../../middlewares/errorHandlerStatus');
+const authenticateToken = require('../../middlewares/tokenVerification')
 
 
-// validate id
+// validate id for all routes
 router.all('/:contactId', validateContactId);
 router.all('/:contactId/favorite', validateContactId);
+// Authentication middleware for all routes
+router.all('/:contactId', authenticateToken);
+router.all('/', authenticateToken);
 
 
 // GET /api/contacts
