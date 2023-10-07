@@ -5,7 +5,7 @@ const authenticateToken = require('../middlewares/tokenVerification')
 const upload = require('../middlewares/uploadHandler')
 const resizeAvatar = require('../middlewares/errorHandlerBody')
 
-router.all('/avatars', authenticateToken);
+// router.all('/avatars', authenticateToken);
 router.all('/avatars', resizeAvatar);
 // router.all('/avatars', upload.single('avatar'));
 

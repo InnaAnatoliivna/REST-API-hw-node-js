@@ -101,13 +101,17 @@ const getCurrentUser = (req, res) => {
 // AVATAR
 
 const avatarUpdate = async (req, res, next) => {
-    if (!req.file) {
+    const { filename } = req.file;
+
+    if (!filename) {
         return res.status(400).json({ message: 'No file uploaded.' });
     }
-    const { filename } = req.file;
     try {
+        const sourcePath = path.join(__dirname, '..', 'tmp', filename);
+        const destinationPath = path.join(avatarsDir, filename);
+        await fs.rename(sourcePath, destinationPath);
+
         await User.findByIdAndUpdate(req.user._id, { avatarURL: `/avatars/${filename}` });
-        console.log(req.user._id)
         res.status(200).json({ avatarURL: `/avatars/${filename}` });
     } catch (error) {
         res.status(500).json({ message: 'Avatar upload failed.' });
