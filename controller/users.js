@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
 const User = require('../service/schemes/models/schemaUsers');
 const jwt = require("jsonwebtoken");
-const jimp = require('jimp');
+// const jimp = require('jimp');
 const path = require("path");
 const fs = require("fs/promises");
 
@@ -26,7 +26,7 @@ const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const avatar = gravatar.url(email);
+        const avatar = gravatar.url(email, { s: '250', d: 'retro' });
         const newUser = await User.create({
             email,
             password: hashedPassword,
@@ -100,17 +100,17 @@ const getCurrentUser = (req, res) => {
 
 // AVATAR
 
-const avatarUpdate = async (req, res) => {
+const avatarUpdate = async (req, res, next) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+    }
     const { filename } = req.file;
-    const targetPath = path.join(avatarsDir, filename);
     try {
-        const image = await jimp.read(req.file.path);
-        await image.cover(250, 250).write(targetPath);
-        fs.unlinkSync(req.file.path);
         await User.findByIdAndUpdate(req.user._id, { avatarURL: `/avatars/${filename}` });
         res.status(200).json({ avatarURL: `/avatars/${filename}` });
     } catch (error) {
         res.status(500).json({ message: 'Avatar upload failed.' });
+        next(error);
     }
 }
 
