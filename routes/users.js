@@ -6,11 +6,6 @@ const upload = require('../middlewares/uploadHandler')
 const resizeAvatar = require('../middlewares/resizeAvatarHandler')
 const isFileExist = require('../middlewares/fileExistHadler')
 
-// router.all('/avatars', authenticateToken);
-// router.all('/avatars', resizeAvatar);
-// router.all('/avatars', upload.single('avatar'));
-
-
 // POST /users/register
 router.post('/register', ctrl.register)
 

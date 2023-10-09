@@ -18,7 +18,6 @@ const resizeAvatar = async (req, res, next) => {
 
     } catch (error) {
         error.status = 400;
-        // console.error('Error resizing avatar:', error.message);
         await fs.unlink(path);
         next(error);
     }

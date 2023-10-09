@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
 const User = require('../service/schemes/models/schemaUsers');
 const jwt = require("jsonwebtoken");
-// const jimp = require('jimp');
 const path = require("path");
 const fs = require("fs/promises");
 
@@ -63,7 +62,6 @@ const login = async (req, res) => {
         const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
         await User.findByIdAndUpdate(user._id, { token });
 
-        // user.token = token;
         await user.save();
 
         return res.status(200).json({ token, user: { email: user.email, subscription: user.subscription } });
