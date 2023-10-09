@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs/promises");
 
 const { SECRET_KEY } = process.env;
-const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
+// const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
 
 // REGISTRATION
 
@@ -103,12 +103,9 @@ const getCurrentUser = (req, res) => {
 const avatarUpdate = async (req, res, next) => {
     const { filename } = req.file;
 
-    if (!filename) {
-        return res.status(400).json({ message: 'No file uploaded.' });
-    }
     try {
         const sourcePath = path.join(__dirname, '..', 'tmp', filename);
-        const destinationPath = path.join(avatarsDir, filename);
+        const destinationPath = path.join(__dirname, '..', 'public', 'avatars', filename);
         await fs.rename(sourcePath, destinationPath);
 
         await User.findByIdAndUpdate(req.user._id, { avatarURL: `/avatars/${filename}` });
