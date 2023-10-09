@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs/promises");
 
 const { SECRET_KEY } = process.env;
-// const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
+const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
 
 // REGISTRATION
 
@@ -101,16 +101,21 @@ const getCurrentUser = (req, res) => {
 // AVATAR
 
 const avatarUpdate = async (req, res, next) => {
-    const { filename } = req.file;
-
     try {
-        const sourcePath = path.join(__dirname, '..', 'tmp', filename);
-        const destinationPath = path.join(__dirname, '..', 'public', 'avatars', filename);
-        await fs.rename(sourcePath, destinationPath);
-
-        await User.findByIdAndUpdate(req.user._id, { avatarURL: `/avatars/${filename}` });
-        res.status(200).json({ avatarURL: `/avatars/${filename}` });
+        const { path: tempUpload, originalname } = req.file;
+        const filename = `${req.user._id}_${originalname}`;
+        const resultUpload = path.join(avatarsDir, filename);
+        try {
+            await fs.rename(tempUpload, resultUpload);
+        } catch (error) {
+            fs.unlink(tempUpload);
+            next(error);
+        }
+        const avatarURL = path.join("avatars", filename);
+        await User.findByIdAndUpdate(req.user._id, { avatarURL });
+        res.status(200).json({ avatarURL });
     } catch (error) {
+        console.error('Error updating avatar:', error);
         res.status(500).json({ message: 'Avatar upload failed.' });
         next(error);
     }
