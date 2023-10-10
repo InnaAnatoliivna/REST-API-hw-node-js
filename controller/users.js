@@ -1,9 +1,12 @@
 const bcrypt = require('bcryptjs');
+const gravatar = require('gravatar');
 const User = require('../service/schemes/models/schemaUsers');
-
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs/promises");
 
 const { SECRET_KEY } = process.env;
+const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
 
 // REGISTRATION
 
@@ -22,9 +25,11 @@ const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const avatar = gravatar.url(email, { s: '250', d: 'retro' });
         const newUser = await User.create({
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            avatarURL: avatar
         });
 
         return res.status(201).json({ user: { email: newUser.email, subscription: newUser.subscription } });
@@ -57,7 +62,6 @@ const login = async (req, res) => {
         const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
         await User.findByIdAndUpdate(user._id, { token });
 
-        // user.token = token;
         await user.save();
 
         return res.status(200).json({ token, user: { email: user.email, subscription: user.subscription } });
@@ -85,17 +89,40 @@ const logout = async (req, res) => {
     }
 };
 
-// CURRENT USER
+// CURRENT_USER
 
 const getCurrentUser = (req, res) => {
     const { email, subscription } = req.user;
     return res.status(200).json({ email, subscription });
 };
 
+// AVATAR
+
+const avatarUpdate = async (req, res, next) => {
+    try {
+        const { path: tempUpload, originalname } = req.file;
+        const filename = `${req.user._id}_${originalname}`;
+        const resultUpload = path.join(avatarsDir, filename);
+        try {
+            await fs.rename(tempUpload, resultUpload);
+        } catch (error) {
+            fs.unlink(tempUpload);
+            next(error);
+        }
+        const avatarURL = path.join("avatars", filename);
+        await User.findByIdAndUpdate(req.user._id, { avatarURL });
+        res.status(200).json({ avatarURL });
+    } catch (error) {
+        console.error('Error updating avatar:', error);
+        res.status(500).json({ message: 'Avatar upload failed.' });
+        next(error);
+    }
+}
 
 module.exports = {
     register,
     login,
     logout,
-    getCurrentUser
+    getCurrentUser,
+    avatarUpdate
 };
