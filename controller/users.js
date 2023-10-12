@@ -4,6 +4,8 @@ const User = require('../service/schemes/models/schemaUsers');
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs/promises");
+const sendVerificationEmail = require('../sendEmail/sendEmail');
+const { uuid } = require('uuidv4');
 
 const { SECRET_KEY } = process.env;
 const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
@@ -23,14 +25,20 @@ const register = async (req, res) => {
             return res.status(409).json({ message: 'Email in use' });
         }
 
+        const verificationToken = uuid();
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const avatar = gravatar.url(email, { s: '250', d: 'retro' });
         const newUser = await User.create({
             email,
             password: hashedPassword,
-            avatarURL: avatar
+            avatarURL: avatar,
+            verificationToken
         });
+
+        // Send verification email
+        await sendVerificationEmail(email, verificationToken);
 
         return res.status(201).json({ user: { email: newUser.email, subscription: newUser.subscription } });
     } catch (error) {
