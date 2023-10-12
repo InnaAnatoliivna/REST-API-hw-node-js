@@ -6,7 +6,8 @@ const verify = async (req, res, next) => {
     const { email } = req.body;
 
     try {
-        const user = await service.userVerify({ email });
+        const user = await service.userVerify(email);
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -34,9 +35,7 @@ const getVerificationToken = async (req, res, next) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        user.verify = true;
-        // user.verificationToken = null;
-        await user.save();
+        await service.verificationTokenUpdate(user._id, true, null);
 
         return res.status(200).json({ message: 'Verification successful' });
     } catch (error) {

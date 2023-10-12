@@ -1,8 +1,8 @@
 const { UKR_NET_MAIL, UKR_NET_PASSWORD } = process.env;
 
 const smtpConfig = {
-    host: 'smtp.ukr.net',
-    port: 465, // 587
+    host: 'smtp.meta.ua',
+    port: 465,
     secure: true,
     auth: {
         user: UKR_NET_MAIL,

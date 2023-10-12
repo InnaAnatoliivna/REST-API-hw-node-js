@@ -1,17 +1,16 @@
 const nodemailer = require('nodemailer');
 const smtpConfig = require('../smtpConfig/smtpConfig');
 
-const { PORT } = process.env;
+const { PORT, UKR_NET_MAIL } = process.env;
 
 
 const sendVerificationEmail = async (email, verificationToken) => {
     const transporter = nodemailer.createTransport(smtpConfig);
 
     const emailOptions = {
-        from: 'your-email@example.com',
+        from: UKR_NET_MAIL,
         to: email,
         subject: 'Verify Your Email',
-        // text: `Click the link to verify your email: http://example.com/users/verify/${verificationToken}`
         html: `<a target="_blank" href="http://localhost:${PORT}/users/verify/${verificationToken}">Click the link to verify your email</a>`,
     };
 

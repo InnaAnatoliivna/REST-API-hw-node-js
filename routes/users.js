@@ -34,10 +34,12 @@ router.patch(
 router.post(
     '/verify',
     validateVerify.userVerifyHandler,
-    ctrlVerify.verify)
+    ctrlVerify.verify
+)
 
 // GET /users/verify/:verificationToken
-router.get('/verify/:verificationToken',
+router.get(
+    '/verify/:verificationToken',
     validateVerify.userVerificationTokenHandler,
     ctrlVerify.getVerificationToken
 )
