@@ -7,12 +7,13 @@ const upload = require('../middlewares/uploadHandler')
 const resizeAvatar = require('../middlewares/resizeAvatarHandler')
 const isFileExist = require('../middlewares/fileExistHadler')
 const validateVerify = require('../middlewares/userVerifyHandler')
+const validateCredetials = require('../middlewares/userCredentialsHandler')
 
 // POST /users/register
-router.post('/register', ctrl.register)
+router.post('/register', validateCredetials, ctrl.register)
 
 // POST /users/login
-router.post('/login', ctrl.login)
+router.post('/login', validateCredetials, ctrl.login)
 
 // POST /users/logout
 router.post('/logout', authenticateToken, ctrl.logout)
