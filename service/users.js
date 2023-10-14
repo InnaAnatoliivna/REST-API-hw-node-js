@@ -1,11 +1,25 @@
-// const User = require('./schemes/models/schemaUsers');
+const User = require('../service/schemes/models/schemaUsers');
 
+const userVerify = async (email) => {
+    return await User.findOne({ email: email });
+}
 
-// const create = async (data) => {
-//     const user = new User(data);
-//     await user.save()
-// }
+const userVerifyToken = async (token) => {
+    return await User.findOne({ verificationToken: token });
+}
 
-// module.exports = {
-//     create,
-// }
+const verificationTokenUpdate = async (userId, verifyStatus, verificationToken) => {
+    return await User.findByIdAndUpdate(
+        { _id: userId },
+        {
+            verify: verifyStatus,
+            verificationToken: verificationToken
+        }
+    );
+}
+
+module.exports = {
+    userVerify,
+    userVerifyToken,
+    verificationTokenUpdate
+};

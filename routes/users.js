@@ -1,16 +1,19 @@
 const express = require('express')
 const router = express.Router()
 const ctrl = require('../controller/users')
+const ctrlVerify = require('../controller/userVerify')
 const authenticateToken = require('../middlewares/tokenVerification')
 const upload = require('../middlewares/uploadHandler')
 const resizeAvatar = require('../middlewares/resizeAvatarHandler')
 const isFileExist = require('../middlewares/fileExistHadler')
+const validateVerify = require('../middlewares/userVerifyHandler')
+const validateCredetials = require('../middlewares/userCredentialsHandler')
 
 // POST /users/register
-router.post('/register', ctrl.register)
+router.post('/register', validateCredetials, ctrl.register)
 
 // POST /users/login
-router.post('/login', ctrl.login)
+router.post('/login', validateCredetials, ctrl.login)
 
 // POST /users/logout
 router.post('/logout', authenticateToken, ctrl.logout)
@@ -25,6 +28,22 @@ router.patch(
     upload.single('avatar'),
     isFileExist,
     resizeAvatar,
-    ctrl.avatarUpdate);
+    ctrl.avatarUpdate
+);
+
+// POST /users/verify
+router.post(
+    '/verify',
+    validateVerify.userVerifyHandler,
+    ctrlVerify.verify
+)
+
+// GET /users/verify/:verificationToken
+router.get(
+    '/verify/:verificationToken',
+    validateVerify.userVerificationTokenHandler,
+    ctrlVerify.getVerificationToken
+)
+
 
 module.exports = router;

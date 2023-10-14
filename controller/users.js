@@ -4,6 +4,8 @@ const User = require('../service/schemes/models/schemaUsers');
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs/promises");
+const sendVerificationEmail = require('../sendEmail/sendEmail');
+const { uuid } = require('uuidv4');
 
 const { SECRET_KEY } = process.env;
 const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
@@ -13,15 +15,13 @@ const avatarsDir = path.join(__dirname, '../', 'public', 'avatars');
 const register = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
-
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ message: 'Email in use' });
         }
+
+        const verificationToken = uuid();
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -29,8 +29,12 @@ const register = async (req, res) => {
         const newUser = await User.create({
             email,
             password: hashedPassword,
-            avatarURL: avatar
+            avatarURL: avatar,
+            verificationToken
         });
+
+        // Send verification email
+        await sendVerificationEmail(email, verificationToken);
 
         return res.status(201).json({ user: { email: newUser.email, subscription: newUser.subscription } });
     } catch (error) {
@@ -43,16 +47,17 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
-
     try {
         const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ message: 'Email or password is wrong' });
         }
+
+        if (!user.verify) {
+            return res.status(401).json({ message: 'Email not verified. Please verify your email before logging in.' });
+        }
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Email or password is wrong' });
@@ -60,9 +65,8 @@ const login = async (req, res) => {
 
         const payload = { id: user._id };
         const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
-        await User.findByIdAndUpdate(user._id, { token });
 
-        await user.save();
+        await User.findByIdAndUpdate(user._id, { token });
 
         return res.status(200).json({ token, user: { email: user.email, subscription: user.subscription } });
     } catch (error) {
